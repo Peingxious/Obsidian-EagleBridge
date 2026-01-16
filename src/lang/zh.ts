@@ -70,6 +70,13 @@ export const zh: Record<TranslationKey, string> = {
 	"modal.eagleJump.cannotExtractId": "无法提取有效 ID",
 	"modal.eagleJump.invalidLink": "请输入有效的链接",
 
+	"modal.insertImage.title": "从 Eagle 插入图片",
+	"modal.insertImage.placeholder": "按标题搜索，空格分词，顺序不限",
+	"modal.insertImage.searching": "正在搜索…",
+	"modal.insertImage.noResult": "没有找到匹配的图片",
+	"modal.insertImage.noActiveEditor": "无法找到当前编辑器，无法插入链接",
+	"modal.insertImage.insertSuccess": "图片链接已插入",
+
 	"menu.openFileSubmenu": "打开文件",
 	"menu.copyDataSubmenu": "复制数据",
 	"menu.openInObsidian": "在 Obsidian 中打开",

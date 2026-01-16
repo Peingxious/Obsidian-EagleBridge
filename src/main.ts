@@ -4,7 +4,7 @@ import { handlePasteEvent, handleDropEvent } from './urlHandler';
 import { onElement } from './onElement';
 import { exec, spawn, execSync } from 'child_process';
 import * as path from 'path';
-import { addCommandSynchronizedPageTabs,addCommandEagleJump } from "./addCommand-config";
+import { addCommandSynchronizedPageTabs,addCommandEagleJump, addCommandInsertImageFromEagle } from "./addCommand-config";
 import { existsSync } from 'fs';
 import { MyPluginSettings, DEFAULT_SETTINGS, SampleSettingTab } from './setting';
 import { handleImageClick, removeZoomedImage } from './Leftclickimage';
@@ -149,9 +149,9 @@ export default class MyPlugin extends Plugin {
 				removeZoomedImage();
 			}
 		});
-		// register all commands in addCommand function
 		addCommandSynchronizedPageTabs(this);
 		addCommandEagleJump(this);
+		addCommandInsertImageFromEagle(this);
 		// 添加自定义样式，确保样式包含编辑模式特定样式
 		const style = document.createElement('style');
 		style.textContent = `

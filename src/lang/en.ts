@@ -68,6 +68,13 @@ export const en = {
 	"modal.eagleJump.cannotExtractId": "Cannot extract a valid ID",
 	"modal.eagleJump.invalidLink": "Please enter a valid link",
 
+	"modal.insertImage.title": "Insert image from Eagle",
+	"modal.insertImage.placeholder": "Search by title (space = multiple keywords)",
+	"modal.insertImage.searching": "Searching…",
+	"modal.insertImage.noResult": "No matching images",
+	"modal.insertImage.noActiveEditor": "Cannot find an active editor",
+	"modal.insertImage.insertSuccess": "Image link inserted",
+
 	"menu.openFileSubmenu": "Open File",
 	"menu.copyDataSubmenu": "Copy Data",
 	"menu.openInObsidian": "Open in Obsidian",

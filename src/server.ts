@@ -24,6 +24,11 @@ function getContentType(ext: string): string | null {
             return 'image/gif';
         case '.webp':
             return 'image/webp';
+        case '.bmp':
+            return 'image/bmp';
+        case '.tif':
+        case '.tiff':
+            return 'image/tiff';
         case '.svg':
             return 'image/svg+xml';
         case '.pdf':
@@ -101,7 +106,9 @@ export function startServer(libraryPath: string, port: number) {
             return;
         }
 
-        const filePath = path.join(libraryPath, req.url || '');
+        // 使用 decodeURIComponent 解码路径，并移除可能的查询参数
+        const decodedPath = decodeURIComponent(pathname);
+        const filePath = path.join(libraryPath, decodedPath);
 
         // 解析 URL 查询参数
         const noAutoplay = urlObj.searchParams.has('noautoplay');
@@ -237,17 +244,11 @@ function proxyToEagle(pathWithQuery: string, clientReq: http.IncomingMessage, cl
     };
 
     const proxyReq = http.request(options, (proxyRes) => {
-        let body = '';
-        proxyRes.on('data', (chunk) => {
-            body += chunk.toString();
-        });
-        proxyRes.on('end', () => {
-            if (proxyRes.headers['content-type']) {
-                clientRes.setHeader('Content-Type', proxyRes.headers['content-type'] as string);
-            }
-            clientRes.writeHead(proxyRes.statusCode || 500);
-            clientRes.end(body);
-        });
+        if (proxyRes.headers['content-type']) {
+            clientRes.setHeader('Content-Type', proxyRes.headers['content-type'] as string);
+        }
+        clientRes.writeHead(proxyRes.statusCode || 500);
+        proxyRes.pipe(clientRes);
     });
 
     proxyReq.on('error', (err) => {

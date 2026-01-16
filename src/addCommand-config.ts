@@ -1,6 +1,6 @@
 import MyPlugin from './main';
 import { syncTags } from "./synchronizedpagetabs";
-import { jumpModal } from "./eaglejumpobsidian";
+import { jumpModal, openInsertImageFromEagleModal } from "./eaglejumpobsidian";
 
 export const addCommandSynchronizedPageTabs = (myPlugin: MyPlugin) => {
 	myPlugin.addCommand({
@@ -18,6 +18,16 @@ export const addCommandEagleJump = (myPlugin: MyPlugin) => {
 		name: "eagle-jump-obsidian",
 		callback: async () => {
 			jumpModal(myPlugin.app, myPlugin.settings);
+		},
+	});
+};
+
+export const addCommandInsertImageFromEagle = (myPlugin: MyPlugin) => {
+	myPlugin.addCommand({
+		id: "insert-image-from-eagle",
+		name: "insert-image-from-eagle",
+		callback: async () => {
+			openInsertImageFromEagleModal(myPlugin.app, myPlugin.settings);
 		},
 	});
 };

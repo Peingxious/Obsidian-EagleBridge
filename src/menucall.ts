@@ -8,6 +8,7 @@ import { existsSync } from 'fs';
 import { EditorView} from '@codemirror/view';
 import { t } from './i18n';
 import { FolderSelectModal } from './FolderSelectModal';
+import { ModifyPropertiesModal } from './ModifyPropertiesModal';
 
 export function handleLinkClick(plugin: MyPlugin, event: MouseEvent, url: string) {
 	const menu = new Menu();
@@ -180,6 +181,25 @@ export async function addEagleImageMenuPreviewMode(plugin: MyPlugin, menu: Menu,
                     .setTitle(t('menu.openInEagle'))
                     .onClick(() => {
                         openInEagle();
+                    })
+            );
+
+            subMenu.addItem((subItem) =>
+                subItem
+                    .setIcon("folder")
+                    .setTitle(t('menu.openContainingFolder'))
+                    .onClick(() => {
+                        const libraryPath = plugin.settings.libraryPath;
+                        const dirPath = path.join(
+                            libraryPath,
+                            "images",
+                            `${id}.info`
+                        );
+                        const child = spawn('explorer.exe', [dirPath], { shell: true });
+                        child.on('error', (error) => {
+                            print('Error opening folder:', error);
+                            new Notice(t('menu.cannotOpenFile'));
+                        });
                     })
             );
 
@@ -358,12 +378,71 @@ export async function addEagleImageMenuPreviewMode(plugin: MyPlugin, menu: Menu,
 
         menu.addItem((item: MenuItem) => {
             const defaultAction = () => {
-                new ModifyPropertiesModal(plugin.app, id, name, annotation, url, tagsArray, (newId, newName, newAnnotation, newUrl, newTags) => {
-                    // 在这里处理保存逻辑
-                }).open();
+                // 1. 提前获取 editor 和计算位置
+                let saved_target_pos: number = -1;
+                const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+                
+                try {
+                    if (editor) {
+                        const target = getMouseEventTarget(event);
+                        const editorView = (editor as any).cm as EditorView;
+                        // 只有当 target 在 editorView 的 DOM 里时，posAtDOM 才有效
+                        if (editorView.dom.contains(target)) {
+                             saved_target_pos = editorView.posAtDOM(target);
+                             print('DEBUG: Calculated target_pos before modal:', saved_target_pos);
+                        } else {
+                             print('DEBUG: Target is not in editor DOM (Reading View?)');
+                             // 尝试直接使用光标位置（如果是编辑模式）
+                             // 或者如果不依赖 DOM，也许可以尝试其他方式，但暂时先这样
+                        }
+                    }
+                } catch (e) {
+                    print('DEBUG: Error calculating pos before modal:', e);
+                }
+
+                new ModifyPropertiesModal(
+                    plugin.app,
+                    plugin,
+                    id,
+                    name,
+                    annotation,
+                    url,
+                    tagsArray,
+                    (newId, newName, newAnnotation, newUrl, newTags) => {
+                        try {
+                            print('DEBUG: ModifyPropertiesModal callback triggered');
+                            // 2. 使用提前计算的位置
+                            if (saved_target_pos !== -1) {
+                                print('DEBUG: Updating link with saved pos:', saved_target_pos);
+                                updateCurTargetLinkTitle(oburl, plugin, saved_target_pos, newName, ext);
+                            } else {
+                                print('DEBUG: No saved pos, trying to recalculate...');
+                                const target = getMouseEventTarget(event);
+                                const editor = plugin.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+                                if (!editor) {
+                                    print('DEBUG: No editor found in callback');
+                                    return;
+                                }
+                                const editorView = (editor as any).cm as EditorView;
+                                
+                                try {
+                                    const current_pos = editorView.posAtDOM(target);
+                                    print('DEBUG: Recalculated pos in callback:', current_pos);
+                                    updateCurTargetLinkTitle(oburl, plugin, current_pos, newName, ext);
+                                } catch (e) {
+                                    print('DEBUG: Failed to recalculate pos:', e);
+                                    new Notice(t('menu.cannotFindLink'));
+                                }
+                            }
+                        } catch (e) {
+                            print('DEBUG: Error in ModifyPropertiesModal callback:', e);
+                            new Notice('更新链接名称失败，请查看控制台日志');
+                        }
+                    }
+                ).open();
             };
             item
-                .setIcon("wrench")
+                .setIcon("pencil")
                 .setTitle(t('menu.modifyProperties'))
                 .onClick(defaultAction);
 
@@ -396,104 +475,7 @@ export async function addEagleImageMenuSourceMode(plugin: MyPlugin, menu: Menu, 
 	menu.showAtPosition({ x: event.pageX, y: event.pageY });
 } 
 
-// 修改eagle属性中的annotation,url,tags
-class ModifyPropertiesModal extends Modal {
-	id: string;
-	name: string;
-	annotation: string;
-	url: string;
-	tags: string[];
-	onSubmit: (id: string, name: string, annotation: string, url: string, tags: string[]) => void;
 
-	constructor(app: App, id: string, name: string, annotation: string, url: string, tags: string[], onSubmit: (id: string, name: string, annotation: string, url: string, tags: string[]) => void) {
-		super(app);
-		this.id = id;
-		this.name = name;
-		this.annotation = annotation;
-		this.url = url;
-		this.tags = tags;
-		this.onSubmit = onSubmit;
-	}
-
-	onOpen() {
-		const { contentEl } = this;
-		contentEl.createEl('h2', { text: 'Modify Properties' });
-
-		new Setting(contentEl)
-			.setName(t('modal.modifyProperties.annotation'))
-			.addText(text => text
-				.setValue(this.annotation)
-				.onChange(value => {
-					this.annotation = value;
-				})
-				.inputEl.style.width = '400px'
-			);
-
-		new Setting(contentEl)
-			.setName(t('modal.modifyProperties.url'))
-			.addText(text => text
-				.setValue(this.url)
-				.onChange(value => {
-					this.url = value;
-				})
-				.inputEl.style.width = '400px'
-			);
-
-		new Setting(contentEl)
-			.setName(t('modal.modifyProperties.tags'))
-			.setDesc(t('modal.modifyProperties.tagsDesc'))
-			.addText(text => text
-				.setValue(this.tags.join(', '))
-				.onChange(value => {
-					this.tags = value.split(',').map(tag => tag.trim());
-				})
-				.inputEl.style.width = '400px'
-			);
-
-		new Setting(contentEl)
-			.addButton(btn => btn
-				.setButtonText(t('modal.modifyProperties.save'))
-				.setCta()
-				.onClick(() => {
-					// 构建数据对象
-					const data = {
-						id: this.id,
-						// name: this.name,
-						tags: this.tags,
-						annotation: this.annotation,
-						url: this.url,
-					};
-
-					// 设置请求选项
-					const requestOptions: RequestInit = {
-						method: 'POST',
-						body: JSON.stringify(data),
-						redirect: 'follow' as RequestRedirect
-					};
-
-					// 发送请求
-					fetch("http://localhost:41595/api/item/update", requestOptions)
-						.then(response => response.json())
-						.then(result => {
-							print(result);
-							new Notice(t('modal.modifyProperties.uploadSuccess'));
-						})
-						.catch(error => {
-							print('error', error);
-							new Notice(t('modal.modifyProperties.uploadFailed'));
-						});
-
-					// 调用 onSubmit 回调
-					this.onSubmit(this.id, this.name, this.annotation, this.url, this.tags);
-					this.close();
-				}));
-	}
-
-	onClose() {
-		const { contentEl } = this;
-		contentEl.empty();
-	}
-}
 
 
 function copyFileToClipboardCMD(filePath: string) {
@@ -648,6 +630,173 @@ export function deleteCurTargetLink(
     }
     
     editor.focus();
+}
+
+export function updateCurTargetLinkTitle(
+    url: string,
+    plugin: MyPlugin,
+    target_pos: number,
+    newTitle: string,
+    ext: string
+) {
+    const activeView = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+    if (!activeView) {
+        print('updateCurTargetLinkTitle no activeView');
+        return;
+    }
+    const editor = activeView.editor;
+    const editorView = (editor as any).cm as EditorView;
+
+    const target_line = editorView.state.doc.lineAt(target_pos);
+    const line_text = target_line.text;
+
+    print('updateCurTargetLinkTitle start', {
+        url,
+        newTitle,
+        ext,
+        target_pos,
+        lineNumber: target_line.number,
+        line_text,
+    });
+
+    const target = editorView.domAtPos(target_pos).node as HTMLElement;
+    const inTable = !!target.closest('table');
+    const inCallout = !!target.closest('.callout');
+
+    const applyReplace = (lineNumber: number, start: number, end: number) => {
+        const oldLine = editor.getLine(lineNumber);
+        const originalLink = oldLine.slice(start, end);
+        const newLink = replaceLinkTitle(originalLink, newTitle, ext);
+        print('updateCurTargetLinkTitle applyReplace', {
+            lineNumber,
+            start,
+            end,
+            originalLink,
+            newLink,
+        });
+        editor.replaceRange(
+            newLink,
+            { line: lineNumber, ch: start },
+            { line: lineNumber, ch: end }
+        );
+    };
+
+    if (!inTable && !inCallout) {
+        let finds = findLinkInLine(url, line_text);
+        print('updateCurTargetLinkTitle initial finds', {
+            url,
+            count: finds.length,
+            ranges: finds,
+        });
+        
+        if (finds.length === 0) {
+            try {
+                const decodedUrl = decodeURI(url);
+                if (decodedUrl !== url) {
+                    finds = findLinkInLine(decodedUrl, line_text);
+                    print('updateCurTargetLinkTitle decoded url search', {
+                        decodedUrl,
+                        count: finds.length,
+                        ranges: finds,
+                    });
+                }
+            } catch (e) {
+                print('updateCurTargetLinkTitle decodeURI error', e);
+            }
+        }
+
+        if (finds.length === 0) {
+            try {
+                const encodedUrl = encodeURI(url);
+                if (encodedUrl !== url) {
+                    finds = findLinkInLine(encodedUrl, line_text);
+                    print('updateCurTargetLinkTitle encoded url search', {
+                        encodedUrl,
+                        count: finds.length,
+                        ranges: finds,
+                    });
+                }
+            } catch (e) {
+                print('updateCurTargetLinkTitle encodeURI error', e);
+            }
+        }
+
+        if (finds.length === 1) {
+             applyReplace(target_line.number - 1, finds[0][0], finds[0][1]);
+        } else if (finds.length === 0) {
+            print('updateCurTargetLinkTitle no match found after all tries');
+            new Notice(t('menu.cannotFindLink'));
+        } else {
+            print('updateCurTargetLinkTitle multiple matches found', {
+                count: finds.length,
+                ranges: finds,
+            });
+            new Notice(t('deleteLink.multipleInLine'));
+        }
+        return;
+    }
+
+    const startReg: { [key: string]: RegExp } = {
+        table: /^\s*\|/,
+        callout: /^>/,
+    };
+
+    const mode = inTable ? 'table' : 'callout';
+    let finds_lines: number[] = [];
+    let finds_all: [number, number][] = [];
+
+    for (let i = target_line.number; i <= editor.lineCount(); i++) {
+        const lt = editor.getLine(i - 1);
+        if (!startReg[mode].test(lt)) break;
+        const finds = findLinkInLine(url, lt);
+        if (finds.length > 0) {
+            finds_lines.push(...new Array(finds.length).fill(i));
+            finds_all.push(...finds);
+        }
+    }
+
+    for (let i = target_line.number - 1; i >= 1; i--) {
+        const lt = editor.getLine(i - 1);
+        if (!startReg[mode].test(lt)) break;
+        const finds = findLinkInLine(url, lt);
+        if (finds.length > 0) {
+            finds_lines.push(...new Array(finds.length).fill(i));
+            finds_all.push(...finds);
+        }
+    }
+
+    if (finds_all.length !== 1) {
+        print('updateCurTargetLinkTitle table/callout match count not 1', {
+            count: finds_all.length,
+            lines: finds_lines,
+            ranges: finds_all,
+        });
+        return;
+    }
+
+    const lineIndex = finds_lines[0] - 1;
+    const [start, end] = finds_all[0];
+    applyReplace(lineIndex, start, end);
+}
+
+function replaceLinkTitle(link: string, newTitle: string, ext: string): string {
+    const match = link.match(/^(!?\[)([^\]]*)(\]\([^)]+\))/);
+    if (!match) return link;
+
+    const prefix = match[1];
+    const inner = match[2];
+    const suffix = match[3];
+
+    const fullTitle = `${newTitle}.${ext}`;
+
+    const image = prefix.startsWith('![');
+    if (!image) {
+        return `${prefix}${fullTitle}${suffix}`;
+    }
+
+    const parts = inner.split('|');
+    const sizePart = parts.length > 1 ? '|' + parts.slice(1).join('|') : '';
+    return `${prefix}${fullTitle}${sizePart}${suffix}`;
 }
 
 // 查找一行中包含特定URL的链接

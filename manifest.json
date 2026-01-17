@@ -1,9 +1,9 @@
 {
-	"id": "EagleBridge",
-	"name": "EagleBridge",
-	"version": "0.5.3",
+	"id": "eagle-image-organizer",
+	"name": "Eagle Image Organizer",
+	"version": "0.2.4",
 	"minAppVersion": "0.15.0",
-	"description": "EagleBridge is a plugin for Obsidian that allows you to connect to the Eagle.",
-	"author": "Peingxious(by:zyjGraphein)",
+	"description": "Eagle Image Origanizer is a plugin for Obsidian that allows you to connect to the Eagle.",
+	"author": "Peingxious (Thanks to:zyjGraphein)",
 	"isDesktopOnly": false
 }

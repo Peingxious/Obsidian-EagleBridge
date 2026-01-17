@@ -1,4 +1,4 @@
-# Obsidian EagleBridge
+# Obsidian Eagle Image Organizer
 
 【[中文](./doc/ReadmeZH.md) / EN】
 
@@ -53,6 +53,37 @@ Run `Eagle Bridge: Insert Image from Eagle` via Command Palette (hotkey recommen
 - **Thumbnail Preview**: Direct preview of asset thumbnails, with support for more formats like BMP/TIFF.
 - **Link Format**: Inserted links point directly to the local server, ensuring perfect display in Obsidian.
 
+## Folder-related Settings
+
+On the settings page, the plugin provides three folder-related blocks under "Folder Settings":
+
+- **Incoming Target Folder**  
+  Configure a fixed Eagle folder ID that will be used as the default
+  destination when you upload files to Eagle from Obsidian.
+
+- **Project Folder Move Settings**  
+  Configure multiple project root folders for the "Set Project Folder" dialog:
+  - You can define multiple project roots (for example: `Social`, `Notes`),
+    each being an Eagle folder ID.
+  - The dialog shows an "All" tab and one tab per project root, and only
+    subfolders of the active project are listed.
+  - If you select a project tab but do not check any subfolders, items will
+    be saved into that project root folder; if you check subfolders, items
+    will be moved / recorded into those subfolders instead.
+  - A single asset can be assigned to multiple project folders.
+
+- **Insert Image Folder Settings**  
+  Provide multi-folder filtering for the "Insert Image from Eagle" search
+  dialog:
+  - You can configure multiple Eagle folder IDs used when inserting images;
+    each entry appears as a switchable filter tab at the top of the dialog.
+  - The "All" tab searches across all configured folders (and their
+    subfolders), while the other tabs only search within the corresponding
+    folder subtree.
+  - Each entry has an "Include subfolders" toggle on the right (enabled by
+    default, without text label, with a tooltip on hover). When enabled,
+    search includes the folder and all its subfolders; when disabled, only
+    the current folder is searched.
 
 ## Installation Instructions
 

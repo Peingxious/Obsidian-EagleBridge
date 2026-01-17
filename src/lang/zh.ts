@@ -28,6 +28,13 @@ export const zh: Record<TranslationKey, string> = {
 	"setting.folderScope.desc": "只在此文件夹及其子文件夹内启用项目文件夹设置（填写文件夹 ID）",
 	"setting.folderScope.placeholder": "请输入父文件夹 ID",
 
+	"setting.projectFolderRoots.title": "项目文件夹移动设置",
+	"setting.projectFolderRoots.desc": "为设置项目文件夹移动配置多个 Eagle 文件夹 ID 及其名称。",
+	"setting.projectFolderRoots.add": "新增项目文件夹",
+	"setting.projectFolderRoots.namePlaceholder": "显示名称",
+	"setting.projectFolderRoots.idPlaceholder": "文件夹 ID",
+	"setting.projectFolderRoots.remove": "删除",
+
 	"setting.imageSize.name": "图片尺寸",
 	"setting.imageSize.desc": "导入图片时的默认尺寸（例如 300 表示 300 像素宽）",
 	"setting.imageSize.placeholder": "请输入图片尺寸",
@@ -58,7 +65,7 @@ export const zh: Record<TranslationKey, string> = {
 	"setting.group.id.title": "文件夹指定设置",
 	"setting.group.id.desc": "配置用于插入图片时的限定 Eagle 文件夹。",
 
-	"setting.folderFilter.title": "限定文件夹列表",
+	"setting.folderFilter.title": "插入图片文件夹设置",
 	"setting.folderFilter.desc": "为插入图片配置多个 Eagle 文件夹 ID 及其名称。",
 	"setting.folderFilter.add": "新增限定文件夹",
 	"setting.folderFilter.namePlaceholder": "显示名称",

@@ -26,7 +26,14 @@ export const en = {
 	"setting.folderScope.desc": "Only enable project folder settings under this folder ID (and its subfolders)",
 	"setting.folderScope.placeholder": "Enter parent folder ID",
 
-	"setting.folderFilter.title": "Folder filters",
+	"setting.projectFolderRoots.title": "Project folder move settings",
+	"setting.projectFolderRoots.desc": "Configure Eagle folders used for project folder move settings.",
+	"setting.projectFolderRoots.add": "Add project folder",
+	"setting.projectFolderRoots.namePlaceholder": "Display name",
+	"setting.projectFolderRoots.idPlaceholder": "Folder ID",
+	"setting.projectFolderRoots.remove": "Remove",
+
+	"setting.folderFilter.title": "Insert image folders",
 	"setting.folderFilter.desc": "Define Eagle folder IDs used to filter images in the insert dialog.",
 	"setting.folderFilter.add": "Add folder filter",
 	"setting.folderFilter.namePlaceholder": "Display name",

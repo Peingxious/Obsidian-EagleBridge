@@ -22,6 +22,7 @@ export interface MyPluginSettings {
 	folderId?: string;
 	folderScope: string;
 	folderFilters?: FolderFilterConfig[];
+	projectFolderRoots?: FolderFilterConfig[];
 	selectedFolderFilterIds?: string[];
 	clickView: boolean;
 	adaptiveRatio: number;
@@ -51,6 +52,7 @@ export const DEFAULT_SETTINGS: MyPluginSettings = {
 	libraryPaths: [],
 	folderScope: '',
 	folderFilters: [],
+	projectFolderRoots: [],
 	selectedFolderFilterIds: [],
 	debug: false,
 	openInObsidian: 'newPage',
@@ -297,16 +299,85 @@ export class SampleSettingTab extends PluginSettingTab {
 
 		(folderIdSetting as any).settingEl.style.marginTop = '10px';
 
-		new Setting(idBody)
-			.setName(t('setting.folderScope.name'))
-			.setDesc(t('setting.folderScope.desc'))
-			.addText(text => text
-				.setPlaceholder(t('setting.folderScope.placeholder'))
-				.setValue(this.plugin.settings.folderScope || '')
-				.onChange(async (value) => {
-					this.plugin.settings.folderScope = value;
+		const projectBlock = idBody.createDiv();
+		projectBlock.style.marginTop = '6px';
+		projectBlock.style.padding = '8px 10px';
+		projectBlock.style.borderRadius = '8px';
+		projectBlock.style.backgroundColor = 'var(--setting-items-background)';
+
+		const projectHeader = projectBlock.createDiv();
+		projectHeader.style.display = 'flex';
+		projectHeader.style.alignItems = 'center';
+		projectHeader.style.justifyContent = 'space-between';
+		projectHeader.style.gap = '8px';
+
+		const projectTextWrapper = projectHeader.createDiv();
+		projectTextWrapper.style.display = 'flex';
+		projectTextWrapper.style.flexDirection = 'column';
+
+		const projectTitle = projectTextWrapper.createDiv({ cls: 'setting-item-name' });
+		projectTitle.textContent = t('setting.projectFolderRoots.title');
+		const projectDesc = projectTextWrapper.createDiv({ cls: 'setting-item-description' });
+		projectDesc.textContent = t('setting.projectFolderRoots.desc');
+
+		const addProjectButton = projectHeader.createEl('button', { text: t('setting.projectFolderRoots.add') });
+		addProjectButton.classList.add('mod-cta');
+		addProjectButton.onclick = async () => {
+			if (!this.plugin.settings.projectFolderRoots) {
+				this.plugin.settings.projectFolderRoots = [];
+			}
+			this.plugin.settings.projectFolderRoots.push({
+				name: '',
+				folderId: '',
+			});
+			await this.plugin.saveSettings();
+			this.display();
+		};
+
+		if (!this.plugin.settings.projectFolderRoots) {
+			this.plugin.settings.projectFolderRoots = [];
+		}
+
+		const projectContainer = projectBlock.createDiv();
+		projectContainer.style.marginTop = '5px';
+
+		const projectRoots = this.plugin.settings.projectFolderRoots;
+
+		projectRoots.forEach((root, index) => {
+			const row = new Setting(projectContainer).setClass('eagle-path-setting');
+			row.addText(text => {
+				text.setPlaceholder(t('setting.projectFolderRoots.namePlaceholder'));
+				text.setValue(root.name || '');
+				text.onChange(async (value) => {
+					root.name = value;
 					await this.plugin.saveSettings();
-				}));
+				});
+			});
+			row.addText(text => {
+				text.setPlaceholder(t('setting.projectFolderRoots.idPlaceholder'));
+				text.setValue(root.folderId || '');
+				text.onChange(async (value) => {
+					root.folderId = value;
+					await this.plugin.saveSettings();
+				});
+			});
+			row.addExtraButton(button => {
+				button.setIcon('trash');
+				button.setTooltip(t('setting.projectFolderRoots.remove'));
+				button.onClick(async () => {
+					projectRoots.splice(index, 1);
+					await this.plugin.saveSettings();
+					this.display();
+				});
+			});
+
+			const rowEl = (row as any).settingEl as HTMLElement;
+			rowEl.style.marginTop = '6px';
+			const infoEl = rowEl.querySelector('.setting-item-info') as HTMLElement | null;
+			if (infoEl) {
+				infoEl.style.display = 'none';
+			}
+		});
 
 		const filterBlock = idBody.createDiv();
 		filterBlock.style.marginTop = '6px';

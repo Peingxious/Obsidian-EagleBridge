@@ -18,6 +18,9 @@ export class FolderSelectModal extends Modal {
     private selectedFolderIds: Set<string> = new Set();
     private searchQuery: string = '';
     private folderListEl: HTMLElement;
+    private rootTabs: EagleFolder[] = [];
+    private activeRootId: string | null = null;
+    private tabsContainer: HTMLElement | null = null;
 
     constructor(app: App, plugin: MyPlugin, itemIds: string[], initialFolderIds: string[] = []) {
         super(app);
@@ -60,9 +63,18 @@ export class FolderSelectModal extends Modal {
                         await this.createFolder(name);
                         if (input) input.value = '';
                         await this.fetchFolders();
+                        this.buildRootTabs();
+                        this.renderTabs();
                         this.renderFolderList();
                     }
                 }));
+
+        const tabsRow = contentEl.createDiv();
+        tabsRow.style.display = 'flex';
+        tabsRow.style.flexWrap = 'wrap';
+        tabsRow.style.gap = '6px';
+        tabsRow.style.marginTop = '8px';
+        this.tabsContainer = tabsRow;
 
         this.folderListEl = contentEl.createDiv({ cls: 'eagle-folder-list' });
         this.folderListEl.style.maxHeight = '300px';
@@ -82,6 +94,8 @@ export class FolderSelectModal extends Modal {
             .onClick(() => this.save()));
 
         await this.fetchFolders();
+        this.buildRootTabs();
+        this.renderTabs();
         this.renderFolderList();
     }
 
@@ -106,7 +120,7 @@ export class FolderSelectModal extends Modal {
 
     async createFolder(name: string) {
         try {
-            const parent = this.plugin.settings.folderScope;
+            const parent = this.activeRootId || undefined;
             const response = await fetch(`http://localhost:${this.plugin.settings.port || 6060}/api/folder/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -127,27 +141,129 @@ export class FolderSelectModal extends Modal {
         }
     }
 
+    private findFolderById(id: string, nodes: EagleFolder[]): EagleFolder | null {
+        const stack: EagleFolder[] = [...nodes];
+        while (stack.length > 0) {
+            const node = stack.pop() as EagleFolder;
+            if (node.id === id) return node;
+            if (node.children && node.children.length > 0) {
+                for (const child of node.children) {
+                    stack.push(child);
+                }
+            }
+        }
+        return null;
+    }
+
+    private buildRootTabs() {
+        this.rootTabs = [];
+        if (!this.folders || this.folders.length === 0) {
+            this.activeRootId = null;
+            return;
+        }
+
+        const scopeId = this.plugin.settings.folderScope;
+        const rootsConfig = this.plugin.settings.projectFolderRoots || [];
+
+        const tabs: EagleFolder[] = [];
+
+        if (rootsConfig.length > 0) {
+            for (const cfg of rootsConfig) {
+                if (!cfg.folderId) continue;
+                const node = this.findFolderById(cfg.folderId, this.folders);
+                if (node) {
+                    tabs.push(node);
+                }
+            }
+        } else {
+            let baseRoots: EagleFolder[] = this.folders;
+            if (scopeId) {
+                const scopedRoot = this.findFolderById(scopeId, this.folders);
+                if (scopedRoot && scopedRoot.children && scopedRoot.children.length > 0) {
+                    baseRoots = [scopedRoot];
+                }
+            }
+            for (const root of baseRoots) {
+                if (root.children && root.children.length > 0) {
+                    for (const child of root.children) {
+                        tabs.push(child);
+                    }
+                }
+            }
+        }
+
+        this.rootTabs = tabs;
+
+        if (this.activeRootId && !this.rootTabs.find(f => f.id === this.activeRootId)) {
+            this.activeRootId = null;
+        }
+
+        if (!this.activeRootId && this.rootTabs.length > 0) {
+            this.activeRootId = this.rootTabs[0].id;
+        }
+    }
+
+    private renderTabs() {
+        if (!this.tabsContainer) return;
+        this.tabsContainer.empty();
+
+        const createChip = (text: string, rootId: string | null) => {
+            const chip = this.tabsContainer!.createDiv();
+            chip.textContent = text;
+            chip.style.padding = '2px 8px';
+            chip.style.borderRadius = '999px';
+            chip.style.cursor = 'pointer';
+            chip.style.fontSize = '12px';
+            chip.style.border = '1px solid var(--background-modifier-border)';
+
+            const isActive = rootId === null
+                ? this.activeRootId === null
+                : this.activeRootId === rootId;
+
+            if (isActive) {
+                chip.style.backgroundColor = 'var(--interactive-accent)';
+                chip.style.color = 'var(--text-on-accent)';
+            }
+
+            chip.onclick = () => {
+                this.activeRootId = rootId;
+                this.renderTabs();
+                this.renderFolderList();
+            };
+        };
+
+        createChip(t('modal.insertImage.filterAll'), null);
+
+        for (const tab of this.rootTabs) {
+            createChip(tab.name, tab.id);
+        }
+    }
+
     renderFolderList() {
         this.folderListEl.empty();
-        const scopeId = this.plugin.settings.folderScope;
-        
         let roots = this.folders;
         
-        if (scopeId) {
-             const findScope = (nodes: EagleFolder[]): EagleFolder | null => {
-                 for (const node of nodes) {
-                     if (node.id === scopeId) return node;
-                     if (node.children) {
-                         const found = findScope(node.children);
-                         if (found) return found;
-                     }
-                 }
-                 return null;
-             };
-             const scopedRoot = findScope(this.folders);
-             if (scopedRoot) {
-                 roots = [scopedRoot];
-             }
+        const rootsConfig = this.plugin.settings.projectFolderRoots || [];
+
+        if (rootsConfig.length > 0) {
+            if (this.activeRootId) {
+                const activeRoot = this.findFolderById(this.activeRootId, this.folders);
+                if (activeRoot && activeRoot.children && activeRoot.children.length > 0) {
+                    roots = activeRoot.children;
+                } else {
+                    roots = [];
+                }
+            } else {
+                const list: EagleFolder[] = [];
+                for (const cfg of rootsConfig) {
+                    if (!cfg.folderId) continue;
+                    const node = this.findFolderById(cfg.folderId, this.folders);
+                    if (node) {
+                        list.push(node);
+                    }
+                }
+                roots = list;
+            }
         }
 
         const renderTree = (nodes: EagleFolder[], depth: number, container: HTMLElement) => {
@@ -223,7 +339,10 @@ export class FolderSelectModal extends Modal {
 
     async save() {
         try {
-            const folders = Array.from(this.selectedFolderIds);
+            let folders = Array.from(this.selectedFolderIds);
+            if (folders.length === 0 && this.activeRootId) {
+                folders = [this.activeRootId];
+            }
             const libraryPath = this.plugin.settings.libraryPath;
 
             for (const id of this.itemIds) {

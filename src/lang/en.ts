@@ -31,6 +31,7 @@ export const en = {
 	"setting.folderFilter.add": "Add folder filter",
 	"setting.folderFilter.namePlaceholder": "Display name",
 	"setting.folderFilter.idPlaceholder": "Folder ID",
+	"setting.folderFilter.includeSubfolders": "Include subfolders",
 	"setting.folderFilter.remove": "Remove",
 
 	"setting.imageSize.name": "Image size",

@@ -64,6 +64,7 @@ export const zh: Record<TranslationKey, string> = {
 	"setting.folderFilter.namePlaceholder": "显示名称",
 	"setting.folderFilter.idPlaceholder": "文件夹 ID",
 	"setting.folderFilter.remove": "删除",
+	"setting.folderFilter.includeSubfolders": "包含子文件夹",
 
 	"setting.group.image.title": "图片传入设置",
 	"setting.group.image.desc": "为直接传入 Obsidian 的图片设定默认行为和显示方式。",

@@ -12,6 +12,7 @@ export interface EagleLibrary {
 export interface FolderFilterConfig {
 	name: string;
 	folderId: string;
+	includeSubfolders?: boolean;
 }
 
 export interface MyPluginSettings {
@@ -337,6 +338,7 @@ export class SampleSettingTab extends PluginSettingTab {
 			this.plugin.settings.folderFilters.push({
 				name: '',
 				folderId: '',
+				includeSubfolders: true,
 			});
 			await this.plugin.saveSettings();
 			this.display();
@@ -367,6 +369,23 @@ export class SampleSettingTab extends PluginSettingTab {
 				text.onChange(async (value) => {
 					filter.folderId = value;
 					await this.plugin.saveSettings();
+				});
+			});
+			row.addExtraButton(button => {
+				const active = filter.includeSubfolders !== false;
+				button.setIcon('check');
+				button.setTooltip(t('setting.folderFilter.includeSubfolders'));
+				button.extraSettingsEl.addClass('eagle-subfolder-toggle');
+				if (active) {
+					button.extraSettingsEl.addClass('eagle-subfolder-active');
+				} else {
+					button.extraSettingsEl.removeClass('eagle-subfolder-active');
+				}
+				button.onClick(async () => {
+					const current = filter.includeSubfolders !== false;
+					filter.includeSubfolders = !current;
+					await this.plugin.saveSettings();
+					this.display();
 				});
 			});
 			row.addExtraButton(button => {

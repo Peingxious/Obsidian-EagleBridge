@@ -40,6 +40,24 @@ If your plugin does not need CSS, delete this file.
     color: var(--interactive-success);
 }
 
+.eagle-subfolder-toggle {
+	width: 22px;
+	height: 22px;
+	border-radius: 999px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	background-color: transparent;
+}
+
+.eagle-subfolder-toggle.eagle-subfolder-active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
 /* Library Header Styling */
 .eagle-library-header .setting-item-info {
     display: none;

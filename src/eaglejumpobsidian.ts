@@ -1,5 +1,5 @@
 import { App, Modal, Notice, Setting, MarkdownView } from 'obsidian';
-import { MyPluginSettings } from './setting';
+import { MyPluginSettings, FolderFilterConfig } from './setting';
 import MyPlugin, { print, setDebug } from './main';
 import { t } from './i18n';
 
@@ -105,6 +105,12 @@ export function jumpModal(app: App, settings: MyPluginSettings) {
 	}).open();
 }
 
+interface EagleFolder {
+	id: string;
+	name: string;
+	children?: EagleFolder[];
+}
+
 export class InsertImageFromEagleModal extends Modal {
 	private plugin: MyPlugin;
 	private settings: MyPluginSettings;
@@ -117,6 +123,64 @@ export class InsertImageFromEagleModal extends Modal {
 	private resultElements: HTMLElement[] = [];
 	private currentPort: number = 6060;
 	private selectedFolderFilterIds: Set<string> = new Set();
+	private folderTree: EagleFolder[] | null = null;
+
+	private async ensureFolderTree(port: number): Promise<EagleFolder[] | null> {
+		if (this.folderTree) {
+			return this.folderTree;
+		}
+		try {
+			const response = await fetch(`http://localhost:${port}/api/folder/list?t=${Date.now()}`);
+			const result = await response.json();
+			if (result.status === 'success' && Array.isArray(result.data)) {
+				this.folderTree = result.data;
+				return this.folderTree;
+			}
+		} catch (e) {
+			print('InsertImageFromEagleModal folder list error', e);
+		}
+		return null;
+	}
+
+	private buildFolderIndex(tree: EagleFolder[]): Map<string, EagleFolder> {
+		const map = new Map<string, EagleFolder>();
+		const stack: EagleFolder[] = [...tree];
+		while (stack.length > 0) {
+			const node = stack.pop() as EagleFolder;
+			map.set(node.id, node);
+			if (node.children && node.children.length > 0) {
+				for (const child of node.children) {
+					stack.push(child);
+				}
+			}
+		}
+		return map;
+	}
+
+	private collectFolderAndDescendants(rootIds: string[], tree: EagleFolder[]): string[] {
+		const index = this.buildFolderIndex(tree);
+		const result = new Set<string>();
+		for (const id of rootIds) {
+			const root = index.get(id);
+			if (!root) {
+				result.add(id);
+				continue;
+			}
+			const stack: EagleFolder[] = [root];
+			while (stack.length > 0) {
+				const node = stack.pop() as EagleFolder;
+				if (!result.has(node.id)) {
+					result.add(node.id);
+					if (node.children && node.children.length > 0) {
+						for (const child of node.children) {
+							stack.push(child);
+						}
+					}
+				}
+			}
+		}
+		return Array.from(result);
+	}
 
 	constructor(app: App, plugin: MyPlugin) {
 		super(app);
@@ -292,9 +356,39 @@ export class InsertImageFromEagleModal extends Modal {
 		const searchKeyword = sortedTerms.length > 0 ? sortedTerms[0] : '';
 		params.set('keyword', searchKeyword);
 
-		const folderIds = Array.from(this.selectedFolderFilterIds);
-		if (folderIds.length > 0) {
-			params.set('folders', folderIds.join(','));
+		const selectedIds = Array.from(this.selectedFolderFilterIds);
+		if (selectedIds.length > 0) {
+			const filters = (this.settings.folderFilters || []) as FolderFilterConfig[];
+			const expandIds: string[] = [];
+			const exactIds: string[] = [];
+			for (const id of selectedIds) {
+				const config = filters.find(f => f.folderId === id);
+				if (!config || !config.folderId) continue;
+				if (config.includeSubfolders === false) {
+					exactIds.push(config.folderId);
+				} else {
+					expandIds.push(config.folderId);
+				}
+			}
+
+			const folderIdsToSend: string[] = [];
+
+			if (expandIds.length > 0) {
+				const tree = await this.ensureFolderTree(port);
+				if (tree) {
+					const ids = this.collectFolderAndDescendants(expandIds, tree);
+					folderIdsToSend.push(...ids);
+				} else {
+					folderIdsToSend.push(...expandIds);
+				}
+			}
+
+			folderIdsToSend.push(...exactIds);
+
+			const uniqueIds = Array.from(new Set(folderIdsToSend));
+			if (uniqueIds.length > 0) {
+				params.set('folders', uniqueIds.join(','));
+			}
 		}
 		
 		params.set('t', Date.now().toString());

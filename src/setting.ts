@@ -9,12 +9,19 @@ export interface EagleLibrary {
 	paths: string[];
 }
 
+export interface FolderFilterConfig {
+	name: string;
+	folderId: string;
+}
+
 export interface MyPluginSettings {
 	mySetting: string;
 	port: number;
 	libraryPath: string;
 	folderId?: string;
 	folderScope: string;
+	folderFilters?: FolderFilterConfig[];
+	selectedFolderFilterIds?: string[];
 	clickView: boolean;
 	adaptiveRatio: number;
 	advancedID: boolean;
@@ -42,6 +49,8 @@ export const DEFAULT_SETTINGS: MyPluginSettings = {
 	websiteUpload: false,
 	libraryPaths: [],
 	folderScope: '',
+	folderFilters: [],
+	selectedFolderFilterIds: [],
 	debug: false,
 	openInObsidian: 'newPage',
 	libraries: [],
@@ -147,6 +156,7 @@ export class SampleSettingTab extends PluginSettingTab {
 			const libContainer = librariesDetails.createDiv();
 			if (index === 0) {
 				libContainer.style.marginTop = '20px';
+				libContainer.style.backgroundColor = 'var(--setting-items-background)';
 			}
 			libContainer.addClass('eagle-library-item');
 			if (lib.id === this.plugin.settings.currentLibraryId) {
@@ -296,6 +306,86 @@ export class SampleSettingTab extends PluginSettingTab {
 					this.plugin.settings.folderScope = value;
 					await this.plugin.saveSettings();
 				}));
+
+		const filterBlock = idBody.createDiv();
+		filterBlock.style.marginTop = '6px';
+		filterBlock.style.padding = '8px 10px';
+		filterBlock.style.borderRadius = '8px';
+		filterBlock.style.backgroundColor = 'var(--setting-items-background)';
+
+		const filterHeader = filterBlock.createDiv();
+		filterHeader.style.display = 'flex';
+		filterHeader.style.alignItems = 'center';
+		filterHeader.style.justifyContent = 'space-between';
+		filterHeader.style.gap = '8px';
+
+		const filterTextWrapper = filterHeader.createDiv();
+		filterTextWrapper.style.display = 'flex';
+		filterTextWrapper.style.flexDirection = 'column';
+
+		const filterTitle = filterTextWrapper.createDiv({ cls: 'setting-item-name' });
+		filterTitle.textContent = t('setting.folderFilter.title');
+		const filterDesc = filterTextWrapper.createDiv({ cls: 'setting-item-description' });
+		filterDesc.textContent = t('setting.folderFilter.desc');
+
+		const addFilterButton = filterHeader.createEl('button', { text: t('setting.folderFilter.add') });
+		addFilterButton.classList.add('mod-cta');
+		addFilterButton.onclick = async () => {
+			if (!this.plugin.settings.folderFilters) {
+				this.plugin.settings.folderFilters = [];
+			}
+			this.plugin.settings.folderFilters.push({
+				name: '',
+				folderId: '',
+			});
+			await this.plugin.saveSettings();
+			this.display();
+		};
+
+		if (!this.plugin.settings.folderFilters) {
+			this.plugin.settings.folderFilters = [];
+		}
+
+		const filterContainer = filterBlock.createDiv();
+		filterContainer.style.marginTop = '5px';
+
+		const filters = this.plugin.settings.folderFilters;
+
+		filters.forEach((filter, index) => {
+			const row = new Setting(filterContainer).setClass('eagle-path-setting');
+			row.addText(text => {
+				text.setPlaceholder(t('setting.folderFilter.namePlaceholder'));
+				text.setValue(filter.name || '');
+				text.onChange(async (value) => {
+					filter.name = value;
+					await this.plugin.saveSettings();
+				});
+			});
+			row.addText(text => {
+				text.setPlaceholder(t('setting.folderFilter.idPlaceholder'));
+				text.setValue(filter.folderId || '');
+				text.onChange(async (value) => {
+					filter.folderId = value;
+					await this.plugin.saveSettings();
+				});
+			});
+			row.addExtraButton(button => {
+				button.setIcon('trash');
+				button.setTooltip(t('setting.folderFilter.remove'));
+				button.onClick(async () => {
+					filters.splice(index, 1);
+					await this.plugin.saveSettings();
+					this.display();
+				});
+			});
+
+			const rowEl = (row as any).settingEl as HTMLElement;
+			rowEl.style.marginTop = '6px';
+			const infoEl = rowEl.querySelector('.setting-item-info') as HTMLElement | null;
+			if (infoEl) {
+				infoEl.style.display = 'none';
+			}
+		});
 
 		const imageGroup = containerEl.createDiv();
 		imageGroup.style.marginTop = '20px';

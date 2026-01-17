@@ -1,6 +1,6 @@
 import { App, Modal, Notice, Setting, MarkdownView } from 'obsidian';
 import { MyPluginSettings } from './setting';
-import { print, setDebug } from './main';
+import MyPlugin, { print, setDebug } from './main';
 import { t } from './i18n';
 
 export class EagleJumpModal extends Modal {
@@ -106,6 +106,7 @@ export function jumpModal(app: App, settings: MyPluginSettings) {
 }
 
 export class InsertImageFromEagleModal extends Modal {
+	private plugin: MyPlugin;
 	private settings: MyPluginSettings;
 	private searchInput: HTMLInputElement;
 	private resultsContainer: HTMLElement;
@@ -115,10 +116,12 @@ export class InsertImageFromEagleModal extends Modal {
 	private currentItems: any[] = [];
 	private resultElements: HTMLElement[] = [];
 	private currentPort: number = 6060;
+	private selectedFolderFilterIds: Set<string> = new Set();
 
-	constructor(app: App, settings: MyPluginSettings) {
+	constructor(app: App, plugin: MyPlugin) {
 		super(app);
-		this.settings = settings;
+		this.plugin = plugin;
+		this.settings = plugin.settings;
 	}
 
 	onOpen() {
@@ -155,6 +158,82 @@ export class InsertImageFromEagleModal extends Modal {
 				}
 			}
 		});
+
+		const filters = this.settings.folderFilters || [];
+		if (filters.length > 0) {
+			const savedIds = this.settings.selectedFolderFilterIds || [];
+			this.selectedFolderFilterIds = new Set(savedIds);
+
+			const filterRow = contentEl.createDiv();
+			filterRow.style.display = 'flex';
+			filterRow.style.alignItems = 'center';
+			filterRow.style.flexWrap = 'wrap';
+			filterRow.style.gap = '8px';
+			filterRow.style.marginBottom = '6px';
+
+			const label = filterRow.createDiv();
+			label.textContent = t('modal.insertImage.filterLabel');
+			label.style.fontSize = '12px';
+			label.style.opacity = '0.7';
+
+			const optionsContainer = filterRow.createDiv();
+			optionsContainer.style.display = 'flex';
+			optionsContainer.style.flexWrap = 'wrap';
+			optionsContainer.style.gap = '6px';
+
+			const renderChips = () => {
+				optionsContainer.empty();
+
+				const createChip = (text: string, folderId: string | null) => {
+					const chip = optionsContainer.createDiv();
+					chip.textContent = text;
+					chip.style.padding = '2px 8px';
+					chip.style.borderRadius = '999px';
+					chip.style.cursor = 'pointer';
+					chip.style.fontSize = '12px';
+					chip.style.border = '1px solid var(--background-modifier-border)';
+
+					const isActive = folderId === null
+						? this.selectedFolderFilterIds.size === 0
+						: this.selectedFolderFilterIds.has(folderId);
+
+					if (isActive) {
+						chip.style.backgroundColor = 'var(--interactive-accent)';
+						chip.style.color = 'var(--text-on-accent)';
+					}
+
+					chip.onclick = async () => {
+						if (folderId === null) {
+							this.selectedFolderFilterIds.clear();
+						} else {
+							if (this.selectedFolderFilterIds.has(folderId)) {
+								this.selectedFolderFilterIds.delete(folderId);
+							} else {
+								this.selectedFolderFilterIds.add(folderId);
+							}
+						}
+
+						this.settings.selectedFolderFilterIds = Array.from(this.selectedFolderFilterIds);
+						await this.plugin.saveSettings();
+
+						renderChips();
+						this.scheduleSearch();
+					};
+				};
+
+				createChip(t('modal.insertImage.filterAll'), null);
+
+				for (const filter of filters) {
+					if (!filter.folderId) continue;
+					const name = filter.name || filter.folderId;
+					createChip(name, filter.folderId);
+				}
+			};
+
+			renderChips();
+		} else {
+			this.selectedFolderFilterIds.clear();
+		}
 
 		this.infoEl = contentEl.createDiv();
 		this.infoEl.style.marginBottom = '6px';
@@ -212,6 +291,11 @@ export class InsertImageFromEagleModal extends Modal {
 		const sortedTerms = [...terms].sort((a, b) => b.length - a.length);
 		const searchKeyword = sortedTerms.length > 0 ? sortedTerms[0] : '';
 		params.set('keyword', searchKeyword);
+
+		const folderIds = Array.from(this.selectedFolderFilterIds);
+		if (folderIds.length > 0) {
+			params.set('folders', folderIds.join(','));
+		}
 		
 		params.set('t', Date.now().toString());
 
@@ -368,6 +452,6 @@ export class InsertImageFromEagleModal extends Modal {
 	}
 }
 
-export function openInsertImageFromEagleModal(app: App, settings: MyPluginSettings) {
-	new InsertImageFromEagleModal(app, settings).open();
+export function openInsertImageFromEagleModal(plugin: MyPlugin) {
+	new InsertImageFromEagleModal(plugin.app, plugin).open();
 }

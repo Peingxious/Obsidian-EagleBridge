@@ -27,7 +27,7 @@ export const addCommandInsertImageFromEagle = (myPlugin: MyPlugin) => {
 		id: "insert-image-from-eagle",
 		name: "insert-image-from-eagle",
 		callback: async () => {
-			openInsertImageFromEagleModal(myPlugin.app, myPlugin.settings);
+			openInsertImageFromEagleModal(myPlugin);
 		},
 	});
 };

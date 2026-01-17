@@ -26,6 +26,13 @@ export const en = {
 	"setting.folderScope.desc": "Only enable project folder settings under this folder ID (and its subfolders)",
 	"setting.folderScope.placeholder": "Enter parent folder ID",
 
+	"setting.folderFilter.title": "Folder filters",
+	"setting.folderFilter.desc": "Define Eagle folder IDs used to filter images in the insert dialog.",
+	"setting.folderFilter.add": "Add folder filter",
+	"setting.folderFilter.namePlaceholder": "Display name",
+	"setting.folderFilter.idPlaceholder": "Folder ID",
+	"setting.folderFilter.remove": "Remove",
+
 	"setting.imageSize.name": "Image size",
 	"setting.imageSize.desc": "Default size for image import",
 	"setting.imageSize.placeholder": "Enter image size",
@@ -53,8 +60,8 @@ export const en = {
 	"setting.websiteUpload.name": "Website upload",
 	"setting.websiteUpload.desc": "Upload external URLs to Eagle. Note: 1) Eagle fetches covers with some delay; 2) exported notes shared with others may not open correctly; 3) this option does not affect links dragged/copied from Eagle.",
 
-	"setting.group.id.title": "ID settings",
-	"setting.group.id.desc": "Limit target folders; all inputs must use Eagle folder IDs.",
+	"setting.group.id.title": "Folder-specific settings",
+	"setting.group.id.desc": "Configure Eagle folder IDs used as targets and search filters.",
 
 	"setting.group.image.title": "Image import settings",
 	"setting.group.image.desc": "Default behavior and display options for images inserted into Obsidian.",
@@ -79,6 +86,8 @@ export const en = {
 
 	"modal.insertImage.title": "Insert image from Eagle",
 	"modal.insertImage.placeholder": "Search by title (space = multiple keywords)",
+	"modal.insertImage.filterLabel": "Folder",
+	"modal.insertImage.filterAll": "All",
 	"modal.insertImage.searching": "Searching…",
 	"modal.insertImage.noResult": "No matching images",
 	"modal.insertImage.noActiveEditor": "Cannot find an active editor",

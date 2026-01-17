@@ -55,8 +55,15 @@ export const zh: Record<TranslationKey, string> = {
 	"setting.websiteUpload.name": "网址上传",
 	"setting.websiteUpload.desc": "将外部 URL 上传到 Eagle。注意：1）Eagle 获取封面有一定延迟；2）导出并分享给他人时可能无法正常跳转；3）本选项不影响从 Eagle 拖拽/复制到 Obsidian 的链接。",
 
-	"setting.group.id.title": "ID 设置分组",
-	"setting.group.id.desc": "限定设置文件夹，输入必须使用文件夹 ID。",
+	"setting.group.id.title": "文件夹指定设置",
+	"setting.group.id.desc": "配置用于插入图片时的限定 Eagle 文件夹。",
+
+	"setting.folderFilter.title": "限定文件夹列表",
+	"setting.folderFilter.desc": "为插入图片配置多个 Eagle 文件夹 ID 及其名称。",
+	"setting.folderFilter.add": "新增限定文件夹",
+	"setting.folderFilter.namePlaceholder": "显示名称",
+	"setting.folderFilter.idPlaceholder": "文件夹 ID",
+	"setting.folderFilter.remove": "删除",
 
 	"setting.group.image.title": "图片传入设置",
 	"setting.group.image.desc": "为直接传入 Obsidian 的图片设定默认行为和显示方式。",
@@ -81,6 +88,8 @@ export const zh: Record<TranslationKey, string> = {
 
 	"modal.insertImage.title": "从 Eagle 插入图片",
 	"modal.insertImage.placeholder": "按标题搜索，空格分词，顺序不限",
+	"modal.insertImage.filterLabel": "文件夹",
+	"modal.insertImage.filterAll": "全部",
 	"modal.insertImage.searching": "正在搜索…",
 	"modal.insertImage.noResult": "没有找到匹配的图片",
 	"modal.insertImage.noActiveEditor": "无法找到当前编辑器，无法插入链接",

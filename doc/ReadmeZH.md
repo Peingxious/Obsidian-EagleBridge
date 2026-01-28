@@ -1,4 +1,4 @@
-# Obsidian EagleBridge
+# Obsidian Eagle Image Organizer
 
 这是一个用于 Obsidian 的示例插件，主要用于连接 Obsidian 与 Eagle 软件。
 
@@ -10,6 +10,7 @@
 
 - 在 Obsidian 中快速跳转 eagle 附件
 - 标签同步
+- 反向同步（更新链接标题）
 - 文件查看
 - 附件管理
 - 搜索并插入 Eagle 素材
@@ -76,7 +77,7 @@
 
 ## 使用指南
 
-- 文字教程（[中文](../doc/TutorialZH.md) / [EN](../doc/Tutorial.md)）
+- 文字教程（[中文](./TutorialZH.md) / [EN](./Tutorial.md)）
 - 视频教程（[Obsidian EagleBridge -bilibili](https://www.bilibili.com/video/BV1voQsYaE5W/?share_source=copy_web&vd_source=491bedf306ddb53a3baa114332c02b93)）
 
 ### 注意事项

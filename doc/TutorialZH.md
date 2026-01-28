@@ -90,3 +90,12 @@
 文章撰写完成后，可通过```Ctrl+P```搜索```EagleBridge: synchronized-page-tabs```（或绑定快捷键）实现附件标签与`.md`中标签的一致。
 
 <img src="../assets/synch.gif" width="600">
+
+## 反向同步 (Reverse Sync)
+
+当您在 Obsidian 中修改了附件（例如图片）在 Eagle 中的属性（如名称）后，或者希望确保笔记中的链接标题与 Eagle 保持一致时，可以使用反向同步功能。
+
+- **自动同步**：在设置中开启“打开文件时反向同步”。当您打开 Markdown 笔记时，插件会自动检查并更新其中的 Eagle 链接标题（例如 `[标题](eagle://...)`）。
+- **手动同步**：通过命令面板运行 `Reverse Sync Eagle Links in Current File` 手动触发同步。
+
+此功能支持静默更新，仅在检测到变更时提示，减少打扰。

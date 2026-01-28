@@ -10,6 +10,7 @@ This plugin includes the following functionalities:
 
 - Quick eagle attachment navigation in Obsidian
 - Tag synchronization
+- Reverse Sync (Update link titles)
 - Video Annotation Synchronization (Upload/Download)
 - File viewing
 - Attachment management
@@ -95,7 +96,7 @@ Visit the latest release page, download `main.js`, `manifest.json`, and `style.c
 
 ## Usage Guide
 
-- Text Tutorial ([中文](./doc/TutorialZH.md) / [EN](./doc/Tutorial.md))
+- Text Tutorial ([中文](doc/TutorialZH.md) / [EN](doc/Tutorial.md))
 - Video Tutorial ([Obsidian EagleBridge -bilibili](https://www.bilibili.com/video/BV1voQsYaE5W/?share_source=copy_web&vd_source=491bedf306ddb53a3baa114332c02b93))
 
 ### Notes

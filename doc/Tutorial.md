@@ -91,3 +91,12 @@ For images in format ```![image.png|700](http://localhost:6060/images/M7G6FALW9D
 After finishing an article, use ```Ctrl+P``` to search for ```EagleBridge: synchronized-page-tabs``` (or bind to a hotkey) and synchronize attachment tags with those in the `.md` file.
 
 <img src="../assets/synch.gif" width="800">
+
+## Reverse Sync
+
+When you modify attachment properties (like name) in Eagle, or want to ensure link titles in your notes match Eagle, use the Reverse Sync feature.
+
+- **Auto-sync**: Enable "Reverse Sync on Open" in settings. When you open a Markdown note, the plugin automatically checks and updates Eagle link titles (e.g., `[Title](eagle://...)`) within it.
+- **Manual sync**: Run `Reverse Sync Eagle Links in Current File` via the Command Palette to trigger manually.
+
+This feature supports silent updates, notifying only when changes are detected to minimize distraction.

@@ -216,7 +216,11 @@ export default class MyPlugin extends Plugin {
 				"active-leaf-change",
 				debounce(async (leaf) => {
 					if (leaf?.view instanceof MarkdownView) {
-						await this.reverseSync(leaf.view as MarkdownView);
+						await this.reverseSync(
+							leaf.view as MarkdownView,
+							false,
+							true,
+						);
 					}
 				}, 200),
 			),
@@ -349,7 +353,11 @@ export default class MyPlugin extends Plugin {
 		}
 	}
 
-	async reverseSync(view: MarkdownView, force: boolean = false) {
+	async reverseSync(
+		view: MarkdownView,
+		force: boolean = false,
+		silent: boolean = false,
+	) {
 		if (!this.settings.reverseSyncOnOpen && !force) return;
 
 		const editor = view.editor;
@@ -367,7 +375,9 @@ export default class MyPlugin extends Plugin {
 			return;
 		}
 
-		new Notice(t("reverseSync.checking"));
+		if (!silent) {
+			new Notice(t("reverseSync.checking"));
+		}
 
 		for (let i = 0; i < lineCount; i++) {
 			let lineText = editor.getLine(i);
@@ -463,7 +473,7 @@ export default class MyPlugin extends Plugin {
 			new Notice(
 				t("reverseSync.complete", { count: updateCount.toString() }),
 			);
-		} else if (matchCount > 0) {
+		} else if (matchCount > 0 && !silent) {
 			new Notice(t("reverseSync.upToDate"));
 		}
 	}

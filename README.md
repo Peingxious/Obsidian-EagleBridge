@@ -1,104 +1,102 @@
 # Obsidian Eagle Image Organizer
 
-This is a sample plugin for Obsidian, designed to integrate Obsidian with the Eagle software.
+这是一个用于将 Obsidian 与 Eagle 集成的插件，能够在笔记中便捷地插入与管理 Eagle 资产（图片/视频/音频等），并支持上传、反向同步、标签同步等工作流。
 
-[eagle](https://eagle.cool) is a powerful attachment management software that allows for easy management of large quantities of images, videos, and audio materials, suitable for various scenarios such as collection, organization, and search. It supports Windows systems.
+[Eagle](https://eagle.cool) 是一款强大的素材管理软件，适合收藏、整理与检索大量图片、视频、音频等素材，支持 Windows。
 
-## Features Overview
+## 功能概览
 
-This plugin includes the following functionalities:
-
-- **Asset Insertion**: Search and insert Eagle assets directly in Obsidian.
-- **Drag & Drop Upload**: Drag local images into notes to automatically upload them to Eagle.
-- **Reverse Sync**: Automatically or manually update Eagle link titles in notes to match Eagle filenames.
-- **Tag Synchronization**: Sync Eagle asset tags to Obsidian notes.
-- **Asset Management**: Modify Eagle asset properties (name, tags, annotations, etc.) or move folders directly from Obsidian.
-- **Multi-Library Support**: Configure multiple Eagle library paths to support multi-device synchronization environments.
+- 资产插入：在 Obsidian 内搜索并插入 Eagle 资产
+- 拖拽/粘贴上传：将本地图片拖入/粘贴到笔记，自动上传至 Eagle
+- 反向同步：自动或手动将笔记中的 Eagle 链接标题更新为 Eagle 实际文件名
+- 标签同步：将当前笔记的 YAML 标签同步到链接涉及的 Eagle 项
+- 资产管理：在右键菜单中修改 Eagle 资产属性（名称、标签、注释等）或移动到目标文件夹
+- 多库支持：配置多个 Eagle 库路径，兼容多设备差异
 
 [![GitHub stars](https://img.shields.io/github/stars/zyjGraphein/Obsidian-EagleBridge?style=flat&label=Stars)](https://github.com/zyjGraphein/Obsidian-EagleBridge/stargazers)
 [![Total Downloads](https://img.shields.io/github/downloads/zyjGraphein/Obsidian-EagleBridge/total?style=flat&label=Total%20Downloads)](https://github.com/zyjGraphein/Obsidian-EagleBridge/releases)
 [![GitHub Release](https://img.shields.io/github/v/release/zyjGraphein/Obsidian-EagleBridge?style=flat&label=Release)](https://github.com/zyjGraphein/Obsidian-EagleBridge/releases/latest)
 
-## Initial Setup Instructions
+## 初始设置
 
-1.  **Configure Eagle Libraries**:
-    - Go to plugin settings and click **+** to add a library.
-    - Enter a library name and provide the absolute path to the Eagle library folder (ending in `.library`) in **Library Paths**.
-    - You can add multiple paths for the same library to handle drive letter differences across computers.
-    - Click the checkmark icon next to the library name to set it as active.
+1. 配置 Eagle 库
+   - 打开插件设置，点击 **+** 添加库
+   - 在 **Library Paths** 中填写 Eagle 库的绝对路径（以 `.library` 结尾的文件夹）
+   - 同一库可添加多个路径（用于不同设备盘符差异）
+   - 点击库名右侧的对勾图标设为当前库
+2. 配置监听端口
+   - 默认端口为 `6060`；确保未与其他服务冲突
+   - 配置完成后建议重启 Obsidian 以确保本地服务正确启动
 
-2.  **Configure Listening Port**:
-    - Default is `6060`. Ensure it does not conflict with other services (Eagle currently does not support custom API ports, so keeping the default is recommended).
+## 核心功能
 
-After configuration, it is recommended to restart Obsidian to ensure the service starts correctly.
+### 搜索并插入 Eagle 资产
+- 通过命令面板运行 `Insert Image From Eagle`（建议设置快捷键）
+- 支持多关键词（空格分隔）检索
+- 支持文件夹过滤与键盘上下选择、回车插入
 
-## Core Features Showcase
+### 上传本地文件到 Eagle
+- 将本地图片拖入或粘贴到 Obsidian，自动上传至 Eagle 并生成可预览链接
+- 可在设置中指定上传目标 **Folder ID**
 
-### Search and Insert Eagle Assets
+### 反向同步
+- 开启 `Reverse Sync on Open` 后，打开笔记时自动将 Eagle 链接标题更新为实际文件名
+- 也可手动运行 `Reverse Sync Eagle Links in Current File` 命令
 
-Run `Insert Image From Eagle` via Command Palette (hotkey recommended):
+## 文件夹相关设置
 
-- **Multi-keyword Search**: Support space-separated keywords.
-- **Folder Filters**: Configure frequently used folders in settings for quick filtering.
-- **Keyboard Navigation**: `↑` `↓` to select, `Enter` to insert.
+- Incoming Target Folder（上传目标文件夹）：指定从 Obsidian 上传到 Eagle 的默认目标文件夹 ID
+- Project Folder Roots（项目根）：用于资产移动管理；其子文件夹将出现在“管理文件夹”菜单中，便于快速归类
+- Folder Filters（过滤器）：为“插入资产”窗口提供顶部过滤标签；点击后仅搜索该文件夹（及其子文件夹）
 
-### Upload Local Files to Eagle
+## 安装
 
-- Drag or paste local images into Obsidian notes; the plugin automatically uploads them to Eagle and generates a preview link.
-- You can specify a target **Folder ID** in settings.
+### 通过 BRAT 安装
+- 在 [BRAT](https://github.com/TfTHacker/obsidian42-brat) 中添加：`https://github.com/zyjGraphein/Obsidian-Eagle-Image-Organizer`
 
-### Reverse Sync
+### 手动安装
+- 前往最新 Release 页面，下载 `main.js`、`manifest.json`、`style.css`，放置到 `<your_vault>/.obsidian/plugins/Obsidian-Eagle-Image-Organizer/`
 
-- Enable `Reverse Sync on Open` to automatically update link titles when opening notes.
-- Or manually run the `Reverse Sync Eagle Links in Current File` command.
+## 使用说明
 
-## Folder-related Settings
+- 图文教程（[中文](doc/TutorialZH.md) / [English](doc/Tutorial.md)）
+- 视频教程（[Obsidian EagleBridge - bilibili](https://www.bilibili.com/video/BV1voQsYaE5W/?share_source=copy_web&vd_source=491bedf306ddb53a3baa114332c02b93)）
 
-The plugin provides three types of folder configurations in settings:
+## 最新 Eagle 实时链接（Latest Eagle URL）
 
-- **Incoming Target Folder**
-    - Specifies the default folder ID in Eagle for files uploaded from Obsidian.
+本插件会在本地库 images 目录发生新建时，生成一个“最新链接”，其他插件或用户可通过以下途径获取：
 
-- **Project Folder Roots**
-    - Roots for managing asset moves.
-    - Subfolders under these roots will appear as options in the "Manage Folders" context menu, facilitating quick asset classification.
+- 命令（适合用户）
+  - Copy Latest Eagle URL：复制当前最新链接到剪贴板
+  - Insert Latest Eagle URL：在光标处插入当前最新链接文本
+- 插件 API（适合开发者）
+  - const p = app.plugins.getPlugin('eagle-image-organizer')
+  - const url = p?.api?.getLatestEagleUrl()
+  - const off = p?.api?.onEagleUrlUpdated((url) => { /* 使用 url */ })
+  - 取消订阅：调用 off()
+- 工作区事件（适合开发者）
+  - app.workspace.on('eagle-image-organizer:url-updated', (url) => { /* 使用 url */ })
+- HTTP 接口
+  - GET `http://localhost:<端口>/latest`
+  - 返回：`{ "url": "http://localhost:<端口>/images/<id>.info" }`（无可用链接时为 `null`）
 
-- **Folder Filters**
-    - Provides filter tabs for the "Insert Image From Eagle" search window.
-    - Configured folders appear as tabs at the top of the search window; clicking one restricts search to that folder (and its subfolders).
+## 注意事项
 
-## Installation Instructions
+- 使用插件时请确保 Eagle 在后台运行
+- 若 Eagle 未运行，图片预览、上传与管理功能将不可用
+- 导出 PDF 可显示图片，但视频/音频等动态链接在本地环境之外不可访问
 
-### Install via BRAT
+## 致谢
 
-Add `https://github.com/zyjGraphein/Obsidian-Eagle-Image-Organizer` to [BRAT](https://github.com/TfTHacker/obsidian42-brat).
+- 基于 [Eagle API](https://api.eagle.cool)
+- 菜单/缩放参考 [AttachFlow](https://github.com/Yaozhuwa/AttachFlow)，嵌入预览参考 [auto-embed](https://github.com/GnoxNahte/obsidian-auto-embed)
 
-### Manual Installation
-
-Visit the latest release page, download `main.js`, `manifest.json`, and `style.css`, and place them into `<your_vault>/.obsidian/plugins/Obsidian-Eagle-Image-Organizer/`.
-
-## Usage Guide
-
-- Text Tutorial ([中文](doc/TutorialZH.md) / [EN](doc/Tutorial.md))
-- Video Tutorial ([Obsidian EagleBridge -bilibili](https://www.bilibili.com/video/BV1voQsYaE5W/?share_source=copy_web&vd_source=491bedf306ddb53a3baa114332c02b93))
-
-## Notes
-
-- Eagle must be running in the background when using this plugin.
-- If Eagle is not running, images may not preview, and upload/management features will fail.
-- Images are visible in exported PDFs, but dynamic links (video/audio) will not be accessible outside the local environment.
-
-## Credits
-
-- Built on [Eagle API](https://api.eagle.cool).
-- Inspired by [AttachFlow](https://github.com/Yaozhuwa/AttachFlow) (Context menu/Zoom) and [auto-embed](https://github.com/GnoxNahte/obsidian-auto-embed) (Embedded preview).
-
-## License
+## 许可
 
 [GNU GPL v3](https://github.com/zyjGraphein/Obsidian-Eagle-Image-Organizer/blob/master/LICENSE)
 
-## Support
+## 支持
 
-If you like this plugin, you can buy me a coffee!
+如果你喜欢这个插件，可以请我喝杯咖啡！
 
 <img src="assets/coffee.png" width="400">

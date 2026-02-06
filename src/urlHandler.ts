@@ -1,4 +1,4 @@
-import { Editor , Notice , FileSystemAdapter} from 'obsidian';
+import { Editor , Notice , FileSystemAdapter, Platform } from 'obsidian';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -6,8 +6,17 @@ import { getLatestDirUrl, urlEmitter } from './server';
 import MyPlugin from './main';
 import { print, setDebug } from './main';
 import { t } from './i18n';
-const electron = require('electron')
-const clipboard = electron.clipboard;
+let electron: any = null;
+let clipboard: any = null;
+if (Platform.isDesktopApp) {
+    try {
+        electron = (window as any).require?.('electron') ?? require('electron');
+        clipboard = electron?.clipboard ?? null;
+    } catch (e) {
+        electron = null;
+        clipboard = null;
+    }
+}
 
 // import { clipboard } from 'electron';
 // const { remote } = require('electron');  
@@ -22,7 +31,7 @@ export async function handlePasteEvent(clipboardEvent: ClipboardEvent, editor: E
     if (clipboardEvent.clipboardData?.files.length) {
         clipboardEvent.preventDefault();
         const file = clipboardEvent.clipboardData.files[0];
-        filePath = electron.webUtils.getPathForFile(file);
+        filePath = electron?.webUtils?.getPathForFile?.(file) ?? "";
 
         if (!filePath) { // 如果 filePath 不存在
             const tempDir = os.tmpdir(); // 使用 os.tmpdir() 获取临时目录
@@ -388,8 +397,7 @@ export async function handleDropEvent(dropEvent: DragEvent, editor: Editor, port
         const files = dropEvent.dataTransfer.files;
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            // 使用 electron.webUtils.getPathForFile 获取文件路径
-            const filePath = electron.webUtils.getPathForFile(file);
+            const filePath = electron?.webUtils?.getPathForFile?.(file) ?? "";
 
             print(`Drag file path: ${filePath}`);
 

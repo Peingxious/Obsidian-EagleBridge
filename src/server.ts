@@ -112,6 +112,12 @@ export function startServer(libraryPath: string, port: number) {
 		const urlObj = new URL(req.url || "/", `http://${req.headers.host}`);
 		const pathname = urlObj.pathname;
 
+		if (pathname === "/latest") {
+			res.writeHead(200, { "Content-Type": "application/json" });
+			res.end(JSON.stringify({ url: latestDirUrl }));
+			return;
+		}
+
 		// 处理本插件作为 Eagle API 的代理，避免 CORS
 		if (pathname.startsWith("/api/")) {
 			if (req.method === "OPTIONS") {

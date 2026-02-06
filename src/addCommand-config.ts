@@ -54,3 +54,44 @@ export const addCommandReverseSync = (myPlugin: MyPlugin) => {
 		},
 	});
 };
+
+export const addCommandCopyLatestEagleUrl = (myPlugin: MyPlugin) => {
+	myPlugin.addCommand({
+		id: "copy-latest-eagle-url",
+		name: "Copy Latest Eagle URL",
+		callback: async () => {
+			const url = myPlugin.api?.getLatestEagleUrl?.() || null;
+			if (!url) {
+				new Notice("No latest Eagle URL");
+				return;
+			}
+			try {
+				if (navigator?.clipboard?.writeText) {
+					await navigator.clipboard.writeText(url);
+				} else {
+					const electron = (window as any).require?.("electron");
+					electron?.clipboard?.writeText?.(url);
+				}
+				new Notice(t("menu.copyToClipboardSuccess"));
+			} catch {
+				new Notice("Copy failed");
+			}
+		},
+	});
+};
+
+export const addCommandInsertLatestEagleUrl = (myPlugin: MyPlugin) => {
+	myPlugin.addCommand({
+		id: "insert-latest-eagle-url",
+		name: "Insert Latest Eagle URL",
+		editorCallback: async (editor) => {
+			const url = myPlugin.api?.getLatestEagleUrl?.() || null;
+			if (!url) {
+				new Notice("No latest Eagle URL");
+				return;
+			}
+			editor.replaceSelection(url);
+			new Notice("Inserted latest Eagle URL");
+		},
+	});
+};

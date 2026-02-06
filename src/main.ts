@@ -14,7 +14,7 @@ import {
 	debounce,
 } from "obsidian";
 import { t } from "./i18n";
-import { startServer, refreshServer, stopServer } from "./server";
+import { startServer, refreshServer, stopServer, getLatestDirUrl, urlEmitter } from "./server";
 import { handlePasteEvent, handleDropEvent } from "./urlHandler";
 import { onElement } from "./onElement";
 import { exec, spawn, execSync } from "child_process";
@@ -24,6 +24,8 @@ import {
 	addCommandEagleJump,
 	addCommandInsertImageFromEagle,
 	addCommandReverseSync,
+	addCommandCopyLatestEagleUrl,
+	addCommandInsertLatestEagleUrl,
 } from "./addCommand-config";
 import { existsSync } from "fs";
 import {
@@ -59,6 +61,10 @@ export function setDebug(value: boolean) {
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+	api: {
+		getLatestEagleUrl: () => string | null;
+		onEagleUrlUpdated: (cb: (url: string) => void) => () => void;
+	};
 
 	async onload() {
 		console.log("加载 eagle-image-organizer 插件");
@@ -87,6 +93,16 @@ export default class MyPlugin extends Plugin {
 		});
 		// 在插件加载时启动服务器
 		startServer(this.settings.libraryPath, this.settings.port);
+		this.api = {
+			getLatestEagleUrl: () => getLatestDirUrl(),
+			onEagleUrlUpdated: (cb: (url: string) => void) => {
+				urlEmitter.on("urlUpdated", cb);
+				return () => urlEmitter.off("urlUpdated", cb);
+			},
+		};
+		urlEmitter.on("urlUpdated", (u: string) => {
+			(this.app.workspace as any).trigger?.("eagle-image-organizer:url-updated", u);
+		});
 		// 添加设置面板
 		this.addSettingTab(new SampleSettingTab(this.app, this));
 		// await this.loadSettings();
@@ -209,6 +225,8 @@ export default class MyPlugin extends Plugin {
 		addCommandEagleJump(this);
 		addCommandInsertImageFromEagle(this);
 		addCommandReverseSync(this);
+		addCommandCopyLatestEagleUrl(this);
+		addCommandInsertLatestEagleUrl(this);
 
 		// 注册事件
 		this.registerEvent(
